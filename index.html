@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cripto Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Cripto Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01"
+                aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home
+                            <span class="visually-hidden">(current)</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li>
+
+                        <div class="dropdown-menu">
+
+                        </div>
+                    </li>
+                </ul>
+                <form class="d-flex">
+                    <input class="form-control me-sm-2" type="search" placeholder="Search">
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="container">
+        <div class="form-group">
+            <p class="titulo-1">Informe a Moeda</p>
+            <div class="input-group mb-3">
+                <input type="text" class="inputmoeda" placeholder="Insira o nome da moeda"
+                    aria-label="Insira o nome da moeda" aria-describedby="button-addon2">
+                <button class="botão-pesquisar" onclick="clicarNoBotao()">Pesquisar</button>
+            </div>
+        </div>
+        <p class="moeda">Nome da Moeda: <span class="nomeMoeda"></span></p>
+    </div>
+
+    <script>
+        const apiKey = "5acf697d-17c6-45a9-8f98-44a022a03c50"; // Sua chave da API
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+        async function buscarMoeda(moeda) {
+            try {
+                const apiUrl = `https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest=${moeda.toUpperCase()}`;
+                const resposta = await fetch(proxyUrl + apiUrl, {
+                    headers: {
+                        'X-CMC_PRO_API_KEY': apiKey,
+                    },
+                });
+
+                if (!resposta.ok) {
+                    throw new Error(`Erro ao buscar moeda: ${resposta.statusText}`);
+                }
+
+                const dados = await resposta.json();
+
+                if (dados.data) {
+                    const nome = dados.data[moeda]?.name;
+                    if (nome) {
+                        document.querySelector(".nomeMoeda").textContent = nome;
+                    } else {
+                        document.querySelector(".nomeMoeda").textContent = "Moeda não encontrada.";
+                    }
+                }
+            } catch (erro) {
+                console.error(erro);
+                document.querySelector(".nomeMoeda").textContent = "Erro ao buscar a moeda.";
+            }
+        }
+
+        function clicarNoBotao() {
+            const moeda = document.querySelector(".inputmoeda").value.trim().toUpperCase();
+            buscarMoeda(moeda);
+        }
+    </script>
+</body>
+
+</html>
