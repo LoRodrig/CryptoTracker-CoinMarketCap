@@ -46,67 +46,72 @@
     </nav>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     <div class="container">
         <div class="form-group">
             <p class="titulo-1">Informe a Moeda</p>
             <div class="input-group mb-3">
                 <input type="text" class="inputmoeda" placeholder="Insira o nome da moeda"
                     aria-label="Insira o nome da moeda" aria-describedby="button-addon2">
-                <button class="botão-pesquisar" onclick="clicarNoBotao()">Pesquisar</button>
+                <button class="botão-pesquisar">Pesquisar</button>
             </div>
         </div>
-        <p class="moeda">Nome da Moeda: <span class="nomeMoeda"></span></p>
+        <p class="moeda">Preço da Moeda: <span class="precoMoeda">0</span></p>
     </div>
 
     <script>
-        const apiKey = "5acf697d-17c6-45a9-8f98-44a022a03c50"; // Sua chave da API
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        var apiKey = {
+            key: '5acf697d-17c6-45a9-8f98-44a022a03c50'
+        };
 
-        async function buscarMoeda(moeda) {
-            try {
-                const apiUrl = `https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest=${moeda.toUpperCase()}`;
-                const resposta = await fetch(proxyUrl + apiUrl, {
-                    headers: {
-                        'X-CMC_PRO_API_KEY': apiKey,
-                    },
-                });
+        
+        function buscarMoeda(siglaMoeda) {
+            var apiUrl = ` https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${siglaMoeda}&CMC_PRO_API_KEY=${apiKey.key}`;
 
-                if (!resposta.ok) {
-                    throw new Error(`Erro ao buscar moeda: ${resposta.statusText}`);
-                }
+            return request('GET', apiUrl)
+                .then((r1) => {
+                    var x1 = JSON.parse(r1.target.responseText);
+                    var moedaInfo = x1.data[siglaMoeda]?.quote.USD;
 
-                const dados = await resposta.json();
-
-                if (dados.data) {
-                    const nome = dados.data[moeda]?.name;
-                    if (nome) {
-                        document.querySelector(".nomeMoeda").textContent = nome;
+                    if (moedaInfo) {
+                        return {
+                            nome: x1.data[siglaMoeda].name,
+                            preco: moedaInfo.price
+                        };
                     } else {
-                        document.querySelector(".nomeMoeda").textContent = "Moeda não encontrada.";
+                        throw new Error("Moeda não encontrada.");
                     }
-                }
-            } catch (erro) {
-                console.error(erro);
-                document.querySelector(".nomeMoeda").textContent = "Erro ao buscar a moeda.";
-            }
+                })
+                .catch(err => {
+                    throw err;
+                });
         }
 
-        function clicarNoBotao() {
-            const moeda = document.querySelector(".inputmoeda").value.trim().toUpperCase();
-            buscarMoeda(moeda);
+        function request(method, url) {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open(method, url);
+                xhr.onload = resolve;
+                xhr.onerror = reject;
+                xhr.send();
+            });
         }
+
+        document.querySelector(".botão-pesquisar").addEventListener("click", function (event) {
+            event.preventDefault();
+            var siglaMoeda = document.querySelector(".inputmoeda").value.trim().toUpperCase();
+
+            buscarMoeda(siglaMoeda)
+                .then(resposta => {
+                    console.log(`Nome da Moeda: ${resposta.nome}`);
+                    console.log(`Preço em USD: ${resposta.preco}`);
+                    document.querySelector(".precoMoeda").textContent = `$ ${resposta.preco}`;
+                })
+                .catch(err => {
+                    console.log(err);
+                    document.querySelector(".precoMoeda").textContent = "Erro ao buscar a moeda.";
+                });
+        });
+
     </script>
 </body>
 
